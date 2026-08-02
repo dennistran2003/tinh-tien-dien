@@ -29,6 +29,9 @@
     .total { background:var(--light); border-radius:20px; text-align:center; padding:21px 12px; margin-top:18px; }
     .total-label { color:var(--green); text-transform:uppercase; letter-spacing:1.2px; font-size:14px; font-weight:850; }
     .money { color:var(--green); font-size:clamp(36px,10vw,54px); line-height:1.14; font-weight:900; letter-spacing:-1.8px; margin-top:5px; }
+    .vat-summary { margin:16px 3px 0; color:var(--muted); font-size:16px; }
+    .vat-summary div { display:flex; justify-content:space-between; gap:16px; padding:6px 0; }
+    .vat-summary strong { color:var(--ink); }
     details { margin-top:17px; border:1px solid var(--line); border-radius:15px; overflow:hidden; }
     summary { cursor:pointer; padding:19px 17px; font-size:18px; font-weight:800; color:var(--green); list-style:none; }
     summary::-webkit-details-marker { display:none; } summary::after { content:"＋"; float:right; font-size:22px; } details[open] summary::after { content:"−"; }
@@ -55,10 +58,14 @@
       </form>
       <section id="result" aria-live="polite">
         <div class="usage">Điện đã sử dụng: <strong id="usage">0 kWh</strong></div>
-        <div class="total"><div class="total-label">Tổng tiền điện</div><div class="money" id="total">0 đ</div></div>
+        <div class="total"><div class="total-label">Tổng tiền điện (đã gồm VAT)</div><div class="money" id="total">0 đ</div></div>
+        <div class="vat-summary">
+          <div><span>Tiền điện trước VAT</span><strong id="subtotal">0 đ</strong></div>
+          <div><span>VAT (10%)</span><strong id="vat">0 đ</strong></div>
+        </div>
         <details><summary>Xem chi tiết từng bậc</summary><div class="breakdown" id="breakdown"></div></details>
       </section>
-      <p class="note">Kết quả là tiền điện theo các bậc giá đã chọn, chưa gồm các khoản phụ thu khác (nếu có).</p>
+      <p class="note">Tổng tiền đã gồm VAT 10%, theo các bậc giá đã chọn; chưa gồm các khoản phụ thu khác (nếu có).</p>
     </section>
   </main>
   <script>
@@ -87,7 +94,10 @@
         rows.push(`<div class="row"><span>Bậc ${index + 1}: ${money(used)} kWh × ${money(tier.price)} đ</span><span>${money(cost)} đ</span></div>`);
       });
       document.querySelector('#usage').textContent = `${money(current - previous)} kWh`;
-      document.querySelector('#total').textContent = `${money(total)} đ`;
+      const vat = Math.round(total * 0.10);
+      document.querySelector('#subtotal').textContent = `${money(total)} đ`;
+      document.querySelector('#vat').textContent = `${money(vat)} đ`;
+      document.querySelector('#total').textContent = `${money(total + vat)} đ`;
       document.querySelector('#breakdown').innerHTML = rows.length ? rows.join('') : '<div class="row"><span>Chưa sử dụng điện</span><span>0 đ</span></div>';
       document.querySelector('#result').style.display = 'block';
       document.querySelector('#result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
