@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d5c41" />
+  <title>Tính tiền điện</title>
+  <style>
+    :root { --green:#0d5c41; --light:#edf8f2; --ink:#17231e; --muted:#5d6c63; --line:#d7e4dc; --orange:#f4a340; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:linear-gradient(160deg,#e9f7ef 0%,#f8fcf9 55%,#fff9ed 100%); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { max-width:640px; margin:auto; padding:24px 18px 42px; }
+    .brand { display:flex; align-items:center; gap:12px; margin:2px 2px 24px; font-weight:800; color:var(--green); font-size:18px; }
+    .bolt { width:37px; height:37px; display:grid; place-items:center; border-radius:12px; background:var(--green); color:#fff; font-size:22px; }
+    .card { background:#fff; border:1px solid rgba(13,92,65,.10); border-radius:24px; padding:28px 22px; box-shadow:0 18px 44px rgba(21,63,40,.12); }
+    h1 { font-size:clamp(28px,7vw,38px); line-height:1.12; text-align:center; margin:0; letter-spacing:-.8px; }
+    .intro { color:var(--muted); text-align:center; font-size:17px; line-height:1.45; margin:12px auto 28px; max-width:420px; }
+    label { display:block; font-size:18px; font-weight:750; margin:18px 0 9px; }
+    .input-wrap { position:relative; }
+    input { width:100%; min-height:64px; border:2px solid var(--line); border-radius:15px; padding:12px 70px 12px 16px; color:var(--ink); font-size:25px; font-weight:700; outline:none; background:#fff; }
+    input:focus { border-color:var(--green); box-shadow:0 0 0 4px #d8eee2; }
+    .unit { position:absolute; right:17px; top:20px; color:var(--muted); font-size:18px; font-weight:700; }
+    button { width:100%; min-height:66px; margin-top:27px; border:0; border-radius:15px; background:var(--green); color:#fff; cursor:pointer; font:800 21px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; letter-spacing:.2px; box-shadow:0 8px 0 #08402d; transition:transform .12s, box-shadow .12s; }
+    button:hover { background:#0b704e; } button:active { transform:translateY(5px); box-shadow:0 3px 0 #08402d; }
+    .error { min-height:23px; color:#c23022; font-weight:650; margin:14px 0 -4px; text-align:center; }
+    #result { display:none; margin-top:28px; border-top:1px solid var(--line); padding-top:27px; }
+    .usage { text-align:center; color:var(--muted); font-size:18px; font-weight:650; }
+    .usage strong { color:var(--green); font-size:25px; }
+    .total { background:var(--light); border-radius:20px; text-align:center; padding:21px 12px; margin-top:18px; }
+    .total-label { color:var(--green); text-transform:uppercase; letter-spacing:1.2px; font-size:14px; font-weight:850; }
+    .money { color:var(--green); font-size:clamp(36px,10vw,54px); line-height:1.14; font-weight:900; letter-spacing:-1.8px; margin-top:5px; }
+    details { margin-top:17px; border:1px solid var(--line); border-radius:15px; overflow:hidden; }
+    summary { cursor:pointer; padding:19px 17px; font-size:18px; font-weight:800; color:var(--green); list-style:none; }
+    summary::-webkit-details-marker { display:none; } summary::after { content:"＋"; float:right; font-size:22px; } details[open] summary::after { content:"−"; }
+    .breakdown { border-top:1px solid var(--line); padding:7px 17px 13px; }
+    .row { display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid #edf2ee; font-size:16px; line-height:1.35; }
+    .row:last-child { border:0; } .row span:last-child { font-weight:800; white-space:nowrap; }
+    .note { color:var(--muted); text-align:center; font-size:14px; line-height:1.45; margin:25px 10px 0; }
+    @media (min-width:620px) { main{padding-top:42px}.card{padding:36px 46px;} }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><span class="bolt">⚡</span> TÍNH TIỀN ĐIỆN</div>
+    <section class="card">
+      <h1>Tháng này dùng<br>bao nhiêu tiền điện?</h1>
+      <p class="intro">Nhập hai chỉ số công tơ rồi bấm <b>Tính tiền</b>.</p>
+      <form id="calculator" novalidate>
+        <label for="previous">Số điện tháng trước</label>
+        <div class="input-wrap"><input id="previous" inputmode="numeric" placeholder="Ví dụ: 1250" autocomplete="off" /><span class="unit">kWh</span></div>
+        <label for="current">Số điện tháng này</label>
+        <div class="input-wrap"><input id="current" inputmode="numeric" placeholder="Ví dụ: 1400" autocomplete="off" /><span class="unit">kWh</span></div>
+        <button type="submit">TÍNH TIỀN</button>
+        <div class="error" id="error" aria-live="polite"></div>
+      </form>
+      <section id="result" aria-live="polite">
+        <div class="usage">Điện đã sử dụng: <strong id="usage">0 kWh</strong></div>
+        <div class="total"><div class="total-label">Tổng tiền điện</div><div class="money" id="total">0 đ</div></div>
+        <details><summary>Xem chi tiết từng bậc</summary><div class="breakdown" id="breakdown"></div></details>
+      </section>
+      <p class="note">Kết quả là tiền điện theo các bậc giá đã chọn, chưa gồm các khoản phụ thu khác (nếu có).</p>
+    </section>
+  </main>
+  <script>
+    const tiers = [
+      { limit: 25, price: 1984 }, { limit: 25, price: 2050 }, { limit: 50, price: 2380 },
+      { limit: 50, price: 2998 }, { limit: 50, price: 3350 }, { limit: Infinity, price: 3460 }
+    ];
+    const money = new Intl.NumberFormat('vi-VN').format;
+    const parse = value => Number(String(value).replace(/[^0-9]/g, ''));
+    const form = document.querySelector('#calculator');
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const previousText = document.querySelector('#previous').value.trim();
+      const currentText = document.querySelector('#current').value.trim();
+      const previous = parse(previousText);
+      const current = parse(currentText);
+      const error = document.querySelector('#error');
+      if (!previousText || !currentText || !Number.isFinite(previous) || !Number.isFinite(current) || previous < 0 || current < 0) { error.textContent = 'Vui lòng nhập đủ hai số điện hợp lệ.'; return; }
+      if (current < previous) { error.textContent = 'Số điện tháng này cần lớn hơn hoặc bằng tháng trước.'; return; }
+      error.textContent = '';
+      let remaining = current - previous, total = 0, rows = [];
+      tiers.forEach((tier, index) => {
+        const used = Math.min(remaining, tier.limit);
+        if (!used) return;
+        const cost = used * tier.price; total += cost; remaining -= used;
+        rows.push(`<div class="row"><span>Bậc ${index + 1}: ${money(used)} kWh × ${money(tier.price)} đ</span><span>${money(cost)} đ</span></div>`);
+      });
+      document.querySelector('#usage').textContent = `${money(current - previous)} kWh`;
+      document.querySelector('#total').textContent = `${money(total)} đ`;
+      document.querySelector('#breakdown').innerHTML = rows.length ? rows.join('') : '<div class="row"><span>Chưa sử dụng điện</span><span>0 đ</span></div>';
+      document.querySelector('#result').style.display = 'block';
+      document.querySelector('#result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  </script>
+</body>
+</html>
