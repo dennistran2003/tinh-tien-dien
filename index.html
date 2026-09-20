@@ -61,11 +61,12 @@
         <div class="total"><div class="total-label">Tổng tiền điện (đã gồm VAT)</div><div class="money" id="total">0 đ</div></div>
         <div class="vat-summary">
           <div><span>Tiền điện trước VAT</span><strong id="subtotal">0 đ</strong></div>
-          <div><span>VAT (15%)</span><strong id="vat">0 đ</strong></div>
+          <div><span>VAT (10%)</span><strong id="vat">0 đ</strong></div>
+          <div><span>Phụ phí (5%)</span><strong id="surcharge">0 đ</strong></div>
         </div>
         <details><summary>Xem chi tiết từng bậc</summary><div class="breakdown" id="breakdown"></div></details>
       </section>
-      <p class="note">Tổng tiền đã gồm VAT 15%, theo các bậc giá đã chọn; chưa gồm các khoản phụ thu khác (nếu có).</p>
+      <p class="note">Tổng tiền đã gồm VAT 10% và phụ phí 5%, theo các bậc giá đã chọn.</p>
     </section>
   </main>
   <script>
@@ -94,10 +95,12 @@
         rows.push(`<div class="row"><span>Bậc ${index + 1}: ${money(used)} kWh × ${money(tier.price)} đ</span><span>${money(cost)} đ</span></div>`);
       });
       document.querySelector('#usage').textContent = `${money(current - previous)} kWh`;
-      const vat = Math.round(total * 0.15);
+      const vat = Math.round(total * 0.10);
+      const surcharge = Math.round(total * 0.05);
       document.querySelector('#subtotal').textContent = `${money(total)} đ`;
       document.querySelector('#vat').textContent = `${money(vat)} đ`;
-      document.querySelector('#total').textContent = `${money(total + vat)} đ`;
+      document.querySelector('#surcharge').textContent = `${money(surcharge)} đ`;
+      document.querySelector('#total').textContent = `${money(total + vat + surcharge)} đ`;
       document.querySelector('#breakdown').innerHTML = rows.length ? rows.join('') : '<div class="row"><span>Chưa sử dụng điện</span><span>0 đ</span></div>';
       document.querySelector('#result').style.display = 'block';
       document.querySelector('#result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
